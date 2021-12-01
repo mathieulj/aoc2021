@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "day1",
+    ## INSERT HERE
+    "template",
+    "common"
+]
