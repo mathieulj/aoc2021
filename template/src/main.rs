@@ -1,7 +1,8 @@
 use anyhow::Result;
 use clap::Parser;
-use std::fs;
+use std::{borrow::Cow, fs};
 
+const DEFAULT_INPUT: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/input.txt"));
 #[derive(Parser)]
 struct App {
     #[clap(subcommand)]
@@ -28,17 +29,17 @@ fn main() -> Result<()> {
     match opts.part {
         Challenge::Part1(Opts { input }) => {
             let data = if let Some(path) = input {
-                fs::read_to_string(path)?
+                Cow::Owned(fs::read_to_string(path)?)
             } else {
-                fs::read_to_string("data/input.txt")?
+                Cow::Borrowed(DEFAULT_INPUT)
             };
             println!("{}", template::challenge1(&data)?);
         }
         Challenge::Part2(Opts { input }) => {
             let data = if let Some(path) = input {
-                fs::read_to_string(path)?
+                Cow::Owned(fs::read_to_string(path)?)
             } else {
-                fs::read_to_string("data/input.txt")?
+                Cow::Borrowed(DEFAULT_INPUT)
             };
             println!("{}", template::challenge2(&data)?);
         }
