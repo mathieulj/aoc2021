@@ -1,0 +1,13 @@
+[package]
+name = "day2"
+version = "0.1.0"
+authors = ["Mathieu Letendre-Jauniaux <MathieuLJ@gmail.com>"]
+edition = "2021"
+
+[dependencies]
+anyhow = "*"
+clap = "3.0.0-beta.5"
+itertools = "*"
+nom = "*"
+nom-supreme = "*"
+common = { path = "../common" }

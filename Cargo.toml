@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "day1",
+    "day2",
     ## INSERT HERE
     "template",
     "common"
