@@ -140,7 +140,6 @@ dependencies = [
  "anyhow",
  "clap",
  "common",
- "either",
  "itertools",
  "nom",
  "nom-supreme",

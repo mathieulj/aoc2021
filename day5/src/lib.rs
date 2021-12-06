@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use either::Either;
+use itertools::Either;
 use nom::{
     bytes::complete::tag,
     character::complete::{char, digit1, newline},

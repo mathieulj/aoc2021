@@ -11,4 +11,3 @@ itertools = "*"
 nom = "*"
 nom-supreme = "*"
 common = { path = "../common" }
-either = "*"
