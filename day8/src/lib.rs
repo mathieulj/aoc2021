@@ -1,13 +1,15 @@
 use std::collections::HashMap;
 
 use anyhow::{bail, Context};
-use nom::branch::alt;
-use nom::character::complete::{char, newline, space1};
-use nom::multi::{fold_many1, separated_list1};
-use nom::Parser;
-use nom::{bytes::complete::tag, sequence::separated_pair};
-use nom_supreme::error::ErrorTree;
-use nom_supreme::ParserExt;
+use nom::{
+    branch::alt,
+    bytes::complete::tag,
+    character::complete::{char, newline, space1},
+    multi::{fold_many1, separated_list1},
+    sequence::separated_pair,
+    Parser,
+};
+use nom_supreme::{error::ErrorTree, ParserExt};
 
 fn segment<'i>() -> impl Parser<&'i str, u8, ErrorTree<&'i str>> {
     alt((
@@ -54,11 +56,11 @@ fn build_dictionary(mut options: Vec<u8>) -> anyhow::Result<HashMap<u8, u8>> {
         .try_into()
         .or_else(|v| bail!("Not exactly four trivials {:?}", v))?;
 
-    complex.sort_by(|a, b| {
-        a.count_ones().cmp(&b.count_ones()).then_with(|| {
-            ((a & four) ^ one)
-                .count_ones()
-                .cmp(&((b & four) ^ one).count_ones())
+    complex.sort_by(|left, right| {
+        left.count_ones().cmp(&right.count_ones()).then_with(|| {
+            let left = (left & four) ^ one;
+            let right = (right & four) ^ one;
+            left.count_ones().cmp(&right.count_ones())
         })
     });
 
