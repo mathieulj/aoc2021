@@ -1,21 +1,17 @@
-use anyhow::{bail, Context};
+use anyhow::Context;
 use itertools::Itertools;
-use nom::bits::bits;
-use nom::bits::complete::tag;
-use nom::bits::complete::take;
-use nom::branch::alt;
-use nom::combinator::all_consuming;
-use nom::combinator::map;
-use nom::combinator::value;
-use nom::error::context;
-use nom::error::VerboseError;
-use nom::multi::many0;
-use nom::multi::many_till;
-use nom::sequence::preceded;
-use nom::sequence::terminated;
-use nom::sequence::tuple;
-use nom::IResult;
-use nom::Parser;
+use nom::{
+    bits::{
+        bits,
+        complete::{tag, take},
+    },
+    branch::alt,
+    combinator::{all_consuming, map, value},
+    error::VerboseError,
+    multi::{many0, many_till},
+    sequence::{preceded, terminated, tuple},
+    IResult, Parser,
+};
 
 #[derive(Debug)]
 enum Packet {
@@ -89,24 +85,21 @@ fn operator(
 }
 
 fn literal<'i>() -> impl Parser<(&'i [u8], usize), Packet, VerboseError<(&'i [u8], usize)>> {
-    context(
-        "literal",
-        map(
-            preceded(
-                tag(4, 3usize),
-                many_till(
-                    preceded(tag(1, 1usize), take(4usize)),
-                    preceded(tag(0, 1usize), take(4usize)),
-                ),
+    map(
+        preceded(
+            tag(4, 3usize),
+            many_till(
+                preceded(tag(1, 1usize), take(4usize)),
+                preceded(tag(0, 1usize), take(4usize)),
             ),
-            |(nibbles, final_nibble): (Vec<u8>, u8)| {
-                let value = nibbles
-                    .into_iter()
-                    .chain([final_nibble])
-                    .fold(0u64, |acc, nibble| (acc << 4) | u64::from(nibble));
-                Packet::Literal { value }
-            },
         ),
+        |(nibbles, final_nibble): (Vec<u8>, u8)| {
+            let value = nibbles
+                .into_iter()
+                .chain([final_nibble])
+                .fold(0u64, |acc, nibble| (acc << 4) | u64::from(nibble));
+            Packet::Literal { value }
+        },
     )
 }
 
@@ -117,10 +110,7 @@ fn packet<'i>() -> impl FnMut(
     (u8, Packet),
     VerboseError<(&'i [u8], usize)>,
 > {
-    tuple((
-        take(3usize),
-        alt((context("literal", literal()), context("operator", operator))),
-    ))
+    tuple((take(3usize), alt((literal(), operator))))
 }
 
 fn sum_of_versions((version, packet): &(u8, Packet)) -> u64 {
