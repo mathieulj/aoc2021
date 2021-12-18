@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use anyhow::{bail, Context};
+use anyhow::Context;
 use nom::{
     branch::alt,
     bytes::complete::tag,
