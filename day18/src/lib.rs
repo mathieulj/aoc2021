@@ -176,7 +176,6 @@ pub fn challenge2(input: &str) -> anyhow::Result<u32> {
 
     let mut max = 0;
     for (a, b) in combinations {
-        println!("{} {}", a, b);
         let mut number = lines[a].clone() + lines[b].clone();
         number.reduce()?;
         max = max.max(number.magnitude());
