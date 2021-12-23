@@ -66,19 +66,12 @@ impl Number {
     fn reduce(&mut self) -> anyhow::Result<()> {
         loop {
             match self.explode(None, None, 0) {
-                ControlFlow::Continue(_) => {}
-                ControlFlow::Break(r) => {
-                    r?;
-                    continue;
-                }
-            }
-
-            match self.split() {
-                ControlFlow::Continue(_) => break,
-                ControlFlow::Break(r) => {
-                    r?;
-                    continue;
-                }
+                ControlFlow::Continue(_) => match self.split() {
+                    // All done
+                    ControlFlow::Continue(_) => break,
+                    ControlFlow::Break(r) => r?,
+                },
+                ControlFlow::Break(r) => r?,
             }
         }
         Ok(())
@@ -88,7 +81,7 @@ impl Number {
         if let Number::Literal(n) = &*self {
             if *n >= 10 {
                 let left = *n >> 1;
-                let right = left + if (n & 0x1) == 0 { 0 } else { 1 };
+                let right = left + (n & 0x1);
 
                 *self = Self::pair(Self::Literal(left), Self::Literal(right));
                 ControlFlow::Break(Ok(()))
@@ -111,39 +104,31 @@ impl Number {
         depth: usize,
     ) -> ControlFlow<anyhow::Result<()>> {
         if depth < 4 {
-            return match self {
+            match self {
                 Number::Literal(_) => ControlFlow::Continue(()),
                 Number::Pair(a, b) => {
                     a.explode(left, Some(b.leftmost_mut()), depth + 1)?;
                     b.explode(Some(a.rightmost_mut()), right, depth + 1)?;
                     ControlFlow::Continue(())
                 }
-            };
-        }
-
-        match &*self {
-            Self::Literal(..) => ControlFlow::Continue(()),
-            Self::Pair(a, b) => match (a.deref(), b.deref()) {
-                (Number::Literal(a), Number::Literal(b)) => {
-                    if let Some(Self::Literal(left)) = left {
-                        *left += *a;
+            }
+        } else {
+            match &*self {
+                Self::Literal(..) => ControlFlow::Continue(()),
+                Self::Pair(a, b) => match (a.deref(), b.deref()) {
+                    (Number::Literal(a), Number::Literal(b)) => {
+                        if let Some(Self::Literal(left)) = left {
+                            *left += *a;
+                        }
+                        if let Some(Self::Literal(right)) = right {
+                            *right += *b;
+                        }
+                        *self = Self::Literal(0);
+                        ControlFlow::Break(Ok(()))
                     }
-                    if let Some(Self::Literal(right)) = right {
-                        *right += *b;
-                    }
-                    *self = Self::Literal(0);
-                    ControlFlow::Break(Ok(()))
-                }
-                (Number::Literal(_), Number::Pair(_, _)) => {
-                    ControlFlow::Break(Err(anyhow::format_err!("Unexpected right pair")))
-                }
-                (Number::Pair(_, _), Number::Literal(_)) => {
-                    ControlFlow::Break(Err(anyhow::format_err!("Unexpected left pair")))
-                }
-                (Number::Pair(_, _), Number::Pair(_, _)) => {
-                    ControlFlow::Break(Err(anyhow::format_err!("Unexpected double pairs")))
-                }
-            },
+                    _ => ControlFlow::Break(Err(anyhow::format_err!("Unexpected pair"))),
+                },
+            }
         }
     }
 
